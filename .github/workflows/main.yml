@@ -15,18 +15,20 @@ jobs:
 
       - name: Extract branch name
         id: extract_branch
-        run: echo "branch_name=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        run: |
+          echo "branch_name=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          echo "Extracted branch name: ${GITHUB_REF#refs/heads/}"
 
       - name: Validate branch name
         id: validate_branch
         run: |
           if [[ ! "${{ env.branch_name }}" =~ ^(feature|bugfix|hotfix)\/[a-zA-Z0-9_]+(-[a-zA-Z0-9]+)?$ ]]; then
-            echo "Branch name '${{ env.branch_name }}' does not follow the convention: feature/name_-A-Z-a-z1-9, bugfix/name_-A-Z-a-z1-9, or hotfix/name_-A-Z-a-z1-9"
+            echo "Branch name '${{ env.branch_name }}' does not follow the convention: 'feature/name', 'bugfix/name', or 'hotfix/name', with optional '-suffix'"
             exit 1
           fi
+        shell: bash
 
       - name: Configure Git for PAT Authentication
-        if: ${{ failure() }}
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
@@ -36,4 +38,10 @@ jobs:
 
       - name: Delete invalid branch
         if: ${{ failure() }}
-        run: git push origin --delete ${{ env.branch_name }}
+        run: |
+          if [ -n "${{ env.branch_name }}" ]; then
+            echo "Deleting invalid branch: ${{ env.branch_name }}"
+            git push origin --delete "${{ env.branch_name }}"
+          else
+            echo "Branch name is empty or invalid, skipping deletion."
+          fi
