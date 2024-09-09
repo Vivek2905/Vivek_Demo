@@ -1,0 +1,31 @@
+name: Enforce Branch Naming Convention
+
+on:
+  create:
+    branches:
+      - '**' # Trigger on any branch creation
+
+jobs:
+  check-branch-name:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Extract branch name
+        id: extract_branch
+        run: echo "::set-output name=branch_name::${GITHUB_REF#refs/heads/}"
+
+      - name: Validate branch name
+        id: validate_branch
+        run: |
+          if [[ ! "${{ steps.extract_branch.outputs.branch_name }}" =~ ^feature\/[a-zA-Z0-9_-]+-[0-9]+$ ]]; then
+            echo "Branch name does not follow the convention: feature/anyname-number"
+            exit 1
+          fi
+
+      - name: Delete branch if invalid
+        if: ${{ failure() }}
+        run: |
+          git push origin --delete ${{ steps.extract_branch.outputs.branch_name }}
