@@ -20,8 +20,8 @@ jobs:
       - name: Validate branch name
         id: validate_branch
         run: |
-          if [[ ! "${{ steps.extract_branch.outputs.branch_name }}" =~ ^(bugfix|hotfix)\/[a-zA-Z0-9_-]+$ && ! "${{ steps.extract_branch.outputs.branch_name }}" =~ ^feature\/[a-zA-Z0-9_-]+-[0-9]+$ ]]; then
-            echo "Branch name does not follow the convention: bugfix/anyname, hotfix/anyname, or feature/anyname-number"
+          if [[ ! "${{ steps.extract_branch.outputs.branch_name }}" =~ ^(feature|bugfix|hotfix)\/[a-zA-Z0-9_-]+$ ]]; then
+            echo "Branch name does not follow the convention: feature/name_-A-Z-a-z1-9, bugfix/name_-A-Z-a-z1-9, or hotfix/name_-A-Z-a-z1-9"
             exit 1
           fi
 
